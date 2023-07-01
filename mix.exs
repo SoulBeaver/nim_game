@@ -25,14 +25,15 @@ defmodule NimGame.MixProject do
 
   defp aliases do
     [
-      analyze: ["format", "dialyzer", "credo --strict", "inch", "coveralls"]
+      analyze: ["format", "dialyzer", "credo --strict", "coveralls"]
     ]
   end
 
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {NimGame.Application, []}
     ]
   end
 
@@ -41,10 +42,8 @@ defmodule NimGame.MixProject do
     [
       {:excoveralls, "~> 0.10", only: :test},
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:inch_ex, github: "rrrene/inch_ex", only: [:dev, :test]}
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:bunt, "~> 0.2.0"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 end
