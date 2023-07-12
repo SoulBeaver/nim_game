@@ -1,16 +1,16 @@
 defmodule NimGame.Core.NimGameTest do
   use ExUnit.Case, async: true
 
-  alias NimGame.Core.{NimGame, Matchsticks}
+  alias NimGame.Core.{Matchsticks, NimGame}
 
   doctest NimGame
 
   defp running_game(context) do
-    {:ok, Map.put(context, :game, NimGame.start_game("a", "b", 13))}
+    {:ok, Map.put(context, :game, NimGame.start_game("a", 13))}
   end
 
   defp finished_game(context) do
-    running_game = NimGame.start_game("a", "b", 3)
+    running_game = NimGame.start_game("a", 3)
     finished_game = NimGame.take_matchsticks(running_game, "a", 3)
 
     {:ok, Map.put(context, :game, finished_game)}
@@ -45,5 +45,32 @@ defmodule NimGame.Core.NimGameTest do
     test "can't take anymore matchsticks", %{game: game} do
       assert NimGame.take_matchsticks(game, "a", 3) == {:error, :game_not_running}
     end
+
+    test "can be restarted", %{game: game} do
+      %NimGame{game_state: {:running, %Matchsticks{matchsticks: matchsticks}}} =
+        NimGame.restart_game(game, 15)
+
+      assert matchsticks == 15
+    end
+  end
+
+  describe "a game" do
+    test "can be played from start to finish" do
+      %NimGame{game_state: {:game_over, winner}} =
+        NimGame.start_game("a")
+        |> run_game_until_complete()
+
+      assert winner in ["a", "PC"]
+    end
+  end
+
+  defp run_game_until_complete(%NimGame{game_state: {:running, _}} = game) do
+    game
+    |> NimGame.take_matchsticks("a", 1)
+    |> run_game_until_complete()
+  end
+
+  defp run_game_until_complete(%NimGame{game_state: {:game_over, _}} = game) do
+    game
   end
 end

@@ -15,10 +15,10 @@ defmodule NimGame.Core.Matchsticks do
     iex> NimGame.Core.Matchsticks.new(13)
     %NimGame.Core.Matchsticks{matchsticks: 13}
   """
-  @spec new(integer()) :: t() | {:error, :invalid_matchstick_number}
+  @spec new(integer()) :: t() | {:error, :invalid_matchsticks_number}
   def new(matchsticks)
 
-  def new(matchsticks) when matchsticks <= 0, do: {:error, :invalid_matchstick_number}
+  def new(matchsticks) when matchsticks <= 0, do: {:error, :invalid_matchsticks_number}
 
   def new(matchsticks) do
     %__MODULE__{matchsticks: matchsticks}

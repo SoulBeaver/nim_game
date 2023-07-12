@@ -6,21 +6,23 @@ defmodule NimGame.Core.NimGame do
 
   alias NimGame.Core.Matchsticks
 
-  defstruct player_one: nil,
-            player_two: nil,
+  defstruct player: nil,
+            difficulty: :easy,
             game_state: :not_started
 
+  @type player :: String.t()
   @type winner :: String.t()
-  @type loser :: String.t()
+
+  @type difficulty :: :easy, :hard
 
   @type game_state ::
           :not_started
           | {:running, Matchsticks.t()}
-          | {:game_over, winner: winner}
+          | {:game_over, winner}
 
   @type t() :: %__MODULE__{
-          player_one: String.t(),
-          player_two: String.t(),
+          player: String.t(),
+          difficulty: difficulty,
           game_state: game_state
         }
 
@@ -29,47 +31,65 @@ defmodule NimGame.Core.NimGame do
 
   Examples:
 
-    iex> NimGame.start_game("a", "b")
-    %NimGame{player_one: "a", player_two: "b", game_state: {:running, %Matchsticks{matchsticks: 13}}}
+    iex> NimGame.start_game("a")
+    %NimGame{player: "a", game_state: {:running, %Matchsticks{matchsticks: 13}}}
 
-    iex> NimGame.start_game("a", "b", 10)
-    %NimGame{player_one: "a", player_two: "b", game_state: {:running, %Matchsticks{matchsticks: 10}}}
+    iex> NimGame.start_game("a", 10)
+    %NimGame{player: "a", game_state: {:running, %Matchsticks{matchsticks: 10}}}
+
+    iex> NimGame.start_game("a", 0)
+    {:error, :invalid_matchsticks_number}
   """
-  @spec start_game(String.t(), String.t(), pos_integer()) :: t()
-  def start_game(player_one, player_two, number_matchsticks \\ 13) do
-    %__MODULE__{
-      player_one: player_one,
-      player_two: player_two,
-      game_state: {:running, Matchsticks.new(number_matchsticks)}
-    }
+  @spec start_game(player, pos_integer(), difficulty()) :: t() | {:error, :invalid_matchsticks_number}
+  def start_game(player, number_matchsticks \\ 13, difficulty \\ :easy) do
+    case Matchsticks.new(number_matchsticks) do
+      %Matchsticks{} = matchsticks ->
+        %__MODULE__{player: player, difficulty: difficulty, game_state: {:running, matchsticks}}
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Restarts the game
+
+  Examples:
+
+    iex> NimGame.start_game("a") |> NimGame.restart_game(15)
+    %NimGame{player: "a", game_state: {:running, %Matchsticks{matchsticks: 15}}}
+  """
+  @spec restart_game(t(), pos_integer()) :: t() | {:error, :invalid_matchsticks_number}
+  def restart_game(game, number_matchsticks \\ 13) do
+    player = Map.get(game, :player)
+
+    start_game(player, number_matchsticks)
   end
 
   @doc """
   Takes a number of matches from the pile and checks for game end.
   """
-  @spec take_matchsticks(t(), String.t(), pos_integer()) :: t() | {:error, :game_not_running}
-  def take_matchsticks(
-        %__MODULE__{game_state: {:running, matchsticks}} = game,
-        active_player,
-        number_to_take
-      ) do
+  @spec take_matchsticks(t(), player, pos_integer()) ::
+          t() | {:error, :game_not_running} | {:error, :not_enough_matchsticks} | {:error, :invalid_number_of_matchsticks}
+  def take_matchsticks(%__MODULE__{game_state: {:running, matchsticks}} = game, active_player, number_to_take) do
     case Matchsticks.take_matchsticks(matchsticks, number_to_take) do
-      %Matchsticks{} = new_matchsticks -> maybe_finish(game, new_matchsticks, active_player)
-      error -> error
+      %Matchsticks{} = new_matchsticks ->
+        maybe_finish(game, new_matchsticks, active_player)
+
+      error ->
+        error
     end
   end
 
   def take_matchsticks(_game, _active_player, _number_to_take),
     do: {:error, :game_not_running}
 
-  defp maybe_finish(
-         game,
-         %Matchsticks{matchsticks: 0},
-         winning_player
-       ) do
+  @spec maybe_finish(t(), Matchsticks.t(), player) :: t()
+  defp maybe_finish(game, %Matchsticks{matchsticks: 0}, winning_player) do
     %__MODULE__{game | game_state: {:game_over, winning_player}}
   end
 
-  defp maybe_finish(game, new_matchsticks, _active_player),
-    do: %__MODULE__{game | game_state: {:running, new_matchsticks}}
+  defp maybe_finish(game, new_matchsticks, _player) do
+    %__MODULE__{game | game_state: {:running, new_matchsticks}}
+  end
 end

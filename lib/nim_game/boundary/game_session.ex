@@ -1,11 +1,15 @@
 defmodule NimGame.Boundary.GameSession do
   @moduledoc """
-  Runs a game of Nim between a player and an AI.
+  Runs a game of Nim between a player and the computer
   """
 
-  alias NimGame.Core.Matchsticks
+  alias NimGame.Core.{NimGame, NimGameAi}
 
   use GenServer
+
+  @type player :: String.t()
+  @type session_id :: pos_integer()
+  @type matchsticks :: pos_integer()
 
   def child_spec(session_id) do
     %{
@@ -15,8 +19,8 @@ defmodule NimGame.Boundary.GameSession do
     }
   end
 
-  @spec start_link({pos_integer(), pos_integer()}) :: {:ok, pid()}
-  def start_link({matchsticks, session_id} = state) do
+  @spec start_link({matchsticks, player, session_id}) :: {:ok, pid()}
+  def start_link({_matchsticks, _player, session_id} = state) do
     GenServer.start_link(
       __MODULE__,
       state,
@@ -24,10 +28,11 @@ defmodule NimGame.Boundary.GameSession do
     )
   end
 
-  def start_game(matchsticks \\ 13, session_id) do
+  @spec start_game(matchsticks, player, session_id) :: any()
+  def start_game(matchsticks \\ 13, player, session_id) do
     DynamicSupervisor.start_child(
       NimGame.Supervisor.GameSession,
-      {__MODULE__, {matchsticks, session_id}}
+      {__MODULE__, {matchsticks, player, session_id}}
     )
   end
 
@@ -39,31 +44,47 @@ defmodule NimGame.Boundary.GameSession do
     GenServer.call(via(session_id), {:take_matchsticks, amount})
   end
 
-  def take_matchsticks_2(server_id, amount) do
-    GenServer.call(server_id, {:take_matchsticks, amount})
-  end
-
   # Server-side calls
 
   @impl true
-  def init({matchsticks, session_id}) do
-    IO.puts("Registered new session with id #{session_id} and #{matchsticks} matchsticks")
-    {:ok, {Matchsticks.new(matchsticks), session_id}}
+  @spec init({matchsticks, player, session_id}) :: {:ok, {NimGame.t(), session_id}}
+  def init({matchsticks, player, session_id}) do
+    {:ok, {NimGame.start_game(player, matchsticks), session_id}}
   end
 
   @impl true
-  def handle_call({:take_matchsticks, amount}, _from, {matchsticks, session_id}) do
-    with matchsticks <- Matchsticks.take_matchsticks(matchsticks, amount) do
-      {:reply, matchsticks, {matchsticks, session_id}}
-    else
-      error -> error
+  def handle_call({:take_matchsticks, amount}, _from, {game, session_id}) do
+    human_player = Map.get(game, :player)
+
+    updated_game_state = perform_human_turn(game, human_player, amount)
+
+    {:reply, updated_game_state, {updated_game_state, session_id}}
+  end
+
+  @impl true
+  def handle_call({:restart_game, matchsticks}, _from, {game, session_id}) do
+    restarted_game = NimGame.restart_game(game, matchsticks)
+
+    {:reply, restarted_game, {restarted_game, session_id}}
+  end
+
+  defp perform_human_turn(game, human_player, amount) do
+    case NimGame.take_matchsticks(game, human_player, amount) do
+      %NimGame{game_state: {:running, _}} = human_turn ->
+        perform_ai_turn(human_turn)
+
+      %NimGame{game_state: {:game_over, _}} = finished_game ->
+        finished_game
+
+      error ->
+        error
     end
   end
 
-  @impl true
-  def handle_call({:restart_game, matchsticks}, _from, {matchsticks, session_id}) do
-    new_game = Matchsticks.new(matchsticks)
-    {:reply, new_game, {new_game, session_id}}
+  defp perform_ai_turn(game) do
+    matchsticks_to_take = NimGameAi.determine_matchstick_number(game)
+
+    NimGame.take_matchsticks(game, "PC", matchsticks_to_take)
   end
 
   # Routing key
