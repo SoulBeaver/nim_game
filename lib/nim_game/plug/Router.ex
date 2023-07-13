@@ -1,7 +1,7 @@
 defmodule NimGame.Plug.Router do
   use Plug.Router
 
-  if Mix.env == :dev do
+  if Mix.env() == :dev do
     use Plug.Debugger
   end
 
@@ -11,20 +11,26 @@ defmodule NimGame.Plug.Router do
   alias NimGame.Boundary.GameSession
   alias NimGame.Plug.VerifyRequest
 
-  plug Plug.Parsers, parsers: [:json], pass: ["application/json"], json_decoder: Jason
-  plug VerifyRequest, fields: [], paths: ["/game", "/game/:session_id", "/game/:session_id/restart"]
-  plug :match
-  plug :dispatch
+  plug(Plug.Parsers, parsers: [:json], pass: ["application/json"], json_decoder: Jason)
 
-  #Start a game of Nim
+  plug(VerifyRequest,
+    fields: [],
+    paths: ["/game", "/game/:session_id", "/game/:session_id/restart"]
+  )
+
+  plug(:match)
+  plug(:dispatch)
+
+  # Start a game of Nim
   post "/game" do
     %{"player" => player, "matchsticks" => matchsticks} = conn.body_params
 
-    new_game_information = GameSession.start_game(
-      matchsticks,
-      player,
-      rand_session_id()
-    )
+    new_game_information =
+      GameSession.start_game(
+        matchsticks,
+        player,
+        rand_session_id()
+      )
 
     send_json(conn, new_game_information)
   end

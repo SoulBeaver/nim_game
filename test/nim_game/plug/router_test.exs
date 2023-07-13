@@ -45,7 +45,8 @@ defmodule NimGame.Plug.RouterTest do
 
     assert conn.state == :sent
     assert conn.status == 200
-    assert matchsticks in Enum.to_list(7..9) # The AI takes 1-3 matchsticks
+    # The AI takes 1-3 matchsticks
+    assert matchsticks in Enum.to_list(7..9)
   end
 
   test "can restart game" do

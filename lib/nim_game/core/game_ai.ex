@@ -21,9 +21,9 @@ defmodule NimGame.Core.GameAi do
   end
 
   def determine_matchstick_number(%Game{
-    difficulty: :hard,
-    game_state: {:running, %Matchsticks{matchsticks: matchsticks}}
-  }) do
+        difficulty: :hard,
+        game_state: {:running, %Matchsticks{matchsticks: matchsticks}}
+      }) do
     # Trust me, super sophisticated
     :rand.uniform(min(matchsticks, 3))
   end

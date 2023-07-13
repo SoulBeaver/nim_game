@@ -37,7 +37,7 @@ defmodule NimGame.Plug.VerifyRequest do
     verified =
       params
       |> Map.keys()
-      |> Enum.map(&(String.to_atom(&1)))
+      |> Enum.map(&String.to_atom(&1))
       |> contains_fields?(mandatory_fields)
 
     unless verified, do: raise(IncompleteRequestError)
