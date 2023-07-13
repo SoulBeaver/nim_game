@@ -5,6 +5,7 @@ defmodule NimGame.Core.Matchsticks do
 
   @type t() :: %NimGame.Core.Matchsticks{matchsticks: integer()}
 
+  @derive Jason.Encoder
   defstruct matchsticks: 13
 
   @doc """

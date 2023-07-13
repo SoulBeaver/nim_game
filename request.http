@@ -1,0 +1,33 @@
+GET http://localhost:8080/game/972455329
+Accept: application/json
+
+###
+
+POST http://localhost:8080/game
+Content-Type: application/json
+Accept: application/json
+
+{
+    "player": "Christian",
+    "matchsticks": 13
+}
+
+###
+
+POST http://localhost:8080/game/972455329
+Content-Type: application/json
+Accept: application/json
+
+{
+    "matchsticks": 1
+}
+
+###
+
+POST http://localhost:8080/game/972455329/restart
+Content-Type: application/json
+Accept: application/json
+
+{
+    "matchsticks": 15
+}

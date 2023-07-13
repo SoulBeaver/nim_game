@@ -1,4 +1,4 @@
-defmodule NimGame.Core.NimGame do
+defmodule NimGame.Core.Game do
   @moduledoc """
   Represents a game session in which a person or computer player can
   take matches from a running match game. The game will determine the winner and loser.
@@ -13,7 +13,7 @@ defmodule NimGame.Core.NimGame do
   @type player :: String.t()
   @type winner :: String.t()
 
-  @type difficulty :: :easy, :hard
+  @type(difficulty :: :easy, :hard)
 
   @type game_state ::
           :not_started
@@ -31,16 +31,17 @@ defmodule NimGame.Core.NimGame do
 
   Examples:
 
-    iex> NimGame.start_game("a")
-    %NimGame{player: "a", game_state: {:running, %Matchsticks{matchsticks: 13}}}
+    iex> Game.start_game("a")
+    %Game{player: "a", game_state: {:running, %Matchsticks{matchsticks: 13}}}
 
-    iex> NimGame.start_game("a", 10)
-    %NimGame{player: "a", game_state: {:running, %Matchsticks{matchsticks: 10}}}
+    iex> Game.start_game("a", 10)
+    %Game{player: "a", game_state: {:running, %Matchsticks{matchsticks: 10}}}
 
-    iex> NimGame.start_game("a", 0)
+    iex> Game.start_game("a", 0)
     {:error, :invalid_matchsticks_number}
   """
-  @spec start_game(player, pos_integer(), difficulty()) :: t() | {:error, :invalid_matchsticks_number}
+  @spec start_game(player, pos_integer(), difficulty()) ::
+          t() | {:error, :invalid_matchsticks_number}
   def start_game(player, number_matchsticks \\ 13, difficulty \\ :easy) do
     case Matchsticks.new(number_matchsticks) do
       %Matchsticks{} = matchsticks ->
@@ -56,8 +57,8 @@ defmodule NimGame.Core.NimGame do
 
   Examples:
 
-    iex> NimGame.start_game("a") |> NimGame.restart_game(15)
-    %NimGame{player: "a", game_state: {:running, %Matchsticks{matchsticks: 15}}}
+    iex> Game.start_game("a") |> Game.restart_game(15)
+    %Game{player: "a", game_state: {:running, %Matchsticks{matchsticks: 15}}}
   """
   @spec restart_game(t(), pos_integer()) :: t() | {:error, :invalid_matchsticks_number}
   def restart_game(game, number_matchsticks \\ 13) do
@@ -70,8 +71,15 @@ defmodule NimGame.Core.NimGame do
   Takes a number of matches from the pile and checks for game end.
   """
   @spec take_matchsticks(t(), player, pos_integer()) ::
-          t() | {:error, :game_not_running} | {:error, :not_enough_matchsticks} | {:error, :invalid_number_of_matchsticks}
-  def take_matchsticks(%__MODULE__{game_state: {:running, matchsticks}} = game, active_player, number_to_take) do
+          t()
+          | {:error, :game_not_running}
+          | {:error, :not_enough_matchsticks}
+          | {:error, :invalid_number_of_matchsticks}
+  def take_matchsticks(
+        %__MODULE__{game_state: {:running, matchsticks}} = game,
+        active_player,
+        number_to_take
+      ) do
     case Matchsticks.take_matchsticks(matchsticks, number_to_take) do
       %Matchsticks{} = new_matchsticks ->
         maybe_finish(game, new_matchsticks, active_player)
