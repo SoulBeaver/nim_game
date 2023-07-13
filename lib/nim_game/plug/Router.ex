@@ -1,17 +1,22 @@
 defmodule NimGame.Plug.Router do
   use Plug.Router
+
+  if Mix.env == :dev do
+    use Plug.Debugger
+  end
+
   use Plug.ErrorHandler
 
   alias NimGame.Core.{Game, Matchsticks}
   alias NimGame.Boundary.GameSession
   alias NimGame.Plug.VerifyRequest
 
-  plug Plug.Parsers, parsers: [:json], json_decoder: Jason
+  plug Plug.Parsers, parsers: [:json], pass: ["application/json"], json_decoder: Jason
   plug VerifyRequest, fields: [], paths: ["/game", "/game/:session_id", "/game/:session_id/restart"]
   plug :match
   plug :dispatch
 
-  # Start game
+  #Start a game of Nim
   post "/game" do
     %{"player" => player, "matchsticks" => matchsticks} = conn.body_params
 
@@ -24,12 +29,12 @@ defmodule NimGame.Plug.Router do
     send_json(conn, new_game_information)
   end
 
-  # Get game state
+  # Get the state of the game
   get "/game/:session_id" do
     send_json(conn, GameSession.game_status(session_id))
   end
 
-  # Play turn
+  # Play a turn of Nim
   post "/game/:session_id" do
     %{"matchsticks" => matchsticks} = conn.body_params
 
@@ -42,7 +47,7 @@ defmodule NimGame.Plug.Router do
     end
   end
 
-  # Restart game
+  # Restart a running or finished game of Nim
   post "/game/:session_id/restart" do
     %{"matchsticks" => matchsticks} = conn.body_params
 

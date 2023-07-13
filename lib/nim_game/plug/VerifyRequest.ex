@@ -14,36 +14,26 @@ defmodule NimGame.Plug.VerifyRequest do
   def call(%Plug.Conn{request_path: "/game"} = conn, _opts) do
     verify_request!(conn.params, [:player], [:matchsticks])
 
-    Logger.info("Verified POST /game")
-
     conn
   end
 
-  def call(%Plug.Conn{request_path: "/game/:session_id"} = conn, _opts) do
+  def call(%Plug.Conn{request_path: "/game/*"} = conn, _opts) do
     verify_request!(conn.params, [:matchsticks_to_take], [])
 
-    Logger.info("Verified POST /game/:session_id")
-
     conn
   end
 
-  def call(%Plug.Conn{request_path: "/game/:session_id/restart"} = conn, _opts) do
+  def call(%Plug.Conn{request_path: "/game/*/restart"} = conn, _opts) do
     verify_request!(conn.params, [:matchsticks], [])
 
-    Logger.info("Verified POST /game/:session_id/restart")
-
     conn
   end
 
-  def call(%Plug.Conn{request_path: path} = conn, _opts) do
-    Logger.info("Couldn't match against path #{path}")
-
+  def call(%Plug.Conn{request_path: _path} = conn, _opts) do
     conn
   end
 
   defp verify_request!(params, mandatory_fields, _optional_fields) do
-    IO.inspect(params, label: :params)
-
     verified =
       params
       |> Map.keys()

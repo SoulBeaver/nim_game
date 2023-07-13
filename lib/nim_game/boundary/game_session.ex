@@ -19,7 +19,7 @@ defmodule NimGame.Boundary.GameSession do
     }
   end
 
-  @spec start_link({matchsticks, player, session_id}) :: {:ok, pid()}
+  @spec start_link({matchsticks(), player(), session_id()}) :: {:ok, pid()}
   def start_link({_matchsticks, _player, session_id} = state) do
     GenServer.start_link(
       __MODULE__,
@@ -28,7 +28,7 @@ defmodule NimGame.Boundary.GameSession do
     )
   end
 
-  @spec start_game(matchsticks, player, session_id) :: any()
+  @spec start_game(matchsticks(), player(), session_id()) :: any()
   def start_game(matchsticks \\ 13, player, session_id) do
     with {:ok, _pid} <-
            DynamicSupervisor.start_child(
@@ -41,14 +41,17 @@ defmodule NimGame.Boundary.GameSession do
     end
   end
 
+  @spec restart_game(matchsticks(), session_id()) :: any()
   def restart_game(matchsticks \\ 13, session_id) do
     GenServer.call(via(session_id), {:restart_game, matchsticks})
   end
 
+  @spec take_matchsticks(matchsticks(), session_id()) :: any()
   def take_matchsticks(amount, session_id) do
     GenServer.call(via(session_id), {:take_matchsticks, amount})
   end
 
+  @spec game_status(session_id()) :: any()
   def game_status(session_id) do
     GenServer.call(via(session_id), :game_status)
   end
@@ -88,6 +91,7 @@ defmodule NimGame.Boundary.GameSession do
     {:reply, {game, session_id}, {game, session_id}}
   end
 
+  @spec perform_human_turn(Game.t(), player(), matchsticks()) :: Game.t() | {:error, String.t()}
   defp perform_human_turn(game, human_player, amount) do
     case Game.take_matchsticks(game, human_player, amount) do
       %Game{game_state: {:running, _}} = human_turn ->
@@ -101,6 +105,7 @@ defmodule NimGame.Boundary.GameSession do
     end
   end
 
+  @spec perform_ai_turn(Game.t()) :: Game.t()
   defp perform_ai_turn(game) do
     matchsticks_to_take = GameAi.determine_matchstick_number(game)
 

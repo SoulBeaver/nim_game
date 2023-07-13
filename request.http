@@ -1,4 +1,4 @@
-GET http://localhost:8080/game/972455329
+GET http://localhost:8080/game/3203731
 Accept: application/json
 
 ###
