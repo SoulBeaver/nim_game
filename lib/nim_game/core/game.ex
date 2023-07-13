@@ -13,11 +13,10 @@ defmodule NimGame.Core.Game do
   @type player :: String.t()
   @type winner :: String.t()
 
-  @type(difficulty :: :easy, :hard)
+  @type difficulty :: :easy | :hard
 
   @type game_state ::
-          :not_started
-          | {:running, Matchsticks.t()}
+          {:running, Matchsticks.t()}
           | {:game_over, winner}
 
   @type t() :: %__MODULE__{

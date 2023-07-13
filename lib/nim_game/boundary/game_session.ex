@@ -8,7 +8,7 @@ defmodule NimGame.Boundary.GameSession do
   use GenServer
 
   @type player :: String.t()
-  @type session_id :: pos_integer()
+  @type session_id :: String.t()
   @type matchsticks :: pos_integer()
 
   def child_spec(session_id) do

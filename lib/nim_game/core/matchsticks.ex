@@ -3,7 +3,7 @@ defmodule NimGame.Core.Matchsticks do
   Represents a pile of matchsticks and allows for someone to take 1, 2 or 3 matchsticks from the pile.
   """
 
-  @type t() :: %NimGame.Core.Matchsticks{matchsticks: integer()}
+  @type t() :: %__MODULE__{matchsticks: integer()}
 
   @derive Jason.Encoder
   defstruct matchsticks: 13
