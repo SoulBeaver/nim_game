@@ -1,21 +1,10 @@
 # NimGame
 
-**TODO: Add description**
+Eine Implementation des Nim-Spiels.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `nim_game` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:nim_game, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/nim_game>.
-
+1. You need a working Elixir installation (1.15).
+2. Run the application with `mix run --no-halt`
+  a. You can find sample requests in the `request.http` file.
+3. Or execute tests with `mix test`
