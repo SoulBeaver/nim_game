@@ -44,6 +44,7 @@ defmodule NimGame.MixProject do
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
       {:bunt, "~> 0.2.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.27", only: :dev, runtime: false},
       {:plug_cowboy, "~> 2.0"},
       {:jason, "~> 1.4"}
     ]
